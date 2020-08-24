@@ -1,9 +1,5 @@
 #include <SDL.h>
-#include <stdio.h>
 #include "chip8.h"
-#include <iostream>
-#include <thread> 
-#include <chrono>
 
 chip8 _chip8;
 
@@ -30,7 +26,7 @@ int main(int argc, char **argv)
 
     _chip8.initialize();
 
-    char path[100] = "path_to_game\\PONG";
+    const char* path = "..\\chip8 games\\PONG";
     _chip8.loadGame(path);
 
     while (!quit)

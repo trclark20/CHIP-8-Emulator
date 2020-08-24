@@ -1,5 +1,3 @@
-#include <string>
-
 class chip8
 {
 private:
@@ -14,6 +12,10 @@ private:
 
 	unsigned short stack[16];
 	unsigned short sp;
+
+	unsigned short x;
+	unsigned short y;
+	unsigned short height;
 
 	unsigned char chip8_fontset[80] =
 	{
@@ -40,9 +42,6 @@ public:
 	void loadGame(const char *gameName);
 	void emulateCycle(int numberOfCycles);
 
-	unsigned short x;
-	unsigned short y;
-	unsigned short height;
 	unsigned char gfx[64 * 32];
 	unsigned char key[16];
 	bool drawFlag;

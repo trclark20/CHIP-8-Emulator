@@ -1,6 +1,5 @@
 #include "chip8.h"
 #include <ios>
-#include <chrono>
 
 unsigned char num;
 
@@ -132,7 +131,7 @@ void chip8::emulateCycle(int numberOfCycles)
 			pc += 2;
 			break;
 
-			//Handle opcodes starting with 8
+		//Handle opcodes starting with 8
 		case 0x8000:
 			switch (opcode & 0x000F)
 			{
@@ -257,7 +256,7 @@ void chip8::emulateCycle(int numberOfCycles)
 			}
 			break;
 
-			//handle opcodes starting with F
+		//handle opcodes starting with F
 		case 0xF000:
 			switch (opcode & 0x000F)
 			{
@@ -295,7 +294,7 @@ void chip8::emulateCycle(int numberOfCycles)
 				pc += 2;
 				break;
 
-				//Handle opcodes ending in 5
+			//Handle opcodes ending in 5
 			case 0x0005:
 				switch (opcode & 0x00F0)
 				{
