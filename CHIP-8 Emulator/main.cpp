@@ -30,7 +30,7 @@ int main(int argc, char **argv)
 
     _chip8.initialize();
 
-    const char* path = "..\\chip8 games\\INVADERS";
+    const char* path = "..\\chip8 games\\CONNECT4";
     _chip8.loadGame(path);
 
     while (!quit)
