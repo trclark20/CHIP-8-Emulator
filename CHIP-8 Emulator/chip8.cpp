@@ -1,5 +1,7 @@
 #include "chip8.h"
 #include <ios>
+#include <string>
+#include <iostream>
 
 unsigned char num;
 
@@ -71,9 +73,12 @@ void chip8::emulateCycle(int numberOfCycles)
 	//Fetch opcode (next 2 bytes)
 	for (int i = 0; i < numberOfCycles; i++)
 	{
+		totalInstructions++;
+		std::cout << std::string(50, '\n');
+		printf("Total instructions: %d", totalInstructions);
 		opcode = memory[pc] << 8 | memory[pc + 1];
-
-		printf("Executing opcode: 0x%X\n", opcode);
+		
+		//printf("Executing opcode: 0x%X\n", opcode);
 		//Decode opcode
 		switch (opcode & 0xF000)
 		{
@@ -213,9 +218,14 @@ void chip8::emulateCycle(int numberOfCycles)
 			x = V[(opcode & 0x0F00) >> 8];
 			y = V[(opcode & 0x00F0) >> 4];
 			height = opcode & 0x000F;
+
+			unsigned char xPos = V[(opcode & 0x0F00) >> 8] % 64;
+			unsigned char yPos = V[(opcode & 0x00F0) >> 4] % 32;
+
 			unsigned short pixel;
 
 			V[0xF] = 0;
+
 			for (int yline = 0; yline < height; yline++)
 			{
 				pixel = memory[I + yline];
@@ -223,9 +233,10 @@ void chip8::emulateCycle(int numberOfCycles)
 				{
 					if ((pixel & (0x80 >> xline)) != 0)
 					{
-						if (gfx[(x + xline + ((y + yline) * 64))] == 1)
+						if (gfx[(yPos + yline) * 64 + (xPos + xline)] == 1)
 							V[0xF] = 1;
-						gfx[x + xline + ((y + yline) * 64)] ^= 1;
+
+						gfx[(yPos + yline) * 64 + (xPos + xline)] ^= 1;
 					}
 				}
 			}
@@ -324,16 +335,22 @@ void chip8::emulateCycle(int numberOfCycles)
 			printf("Unknown opcode: 0x%X\n", opcode);
 			break;
 		}
+	}
+}
 
-		//Update timers
-		if (delay_timer > 0)
-			--delay_timer;
+void chip8::updateTimers()
+{
+	//std::cout << std::string(50, '\n');
+	//printf("Delay Timer: %d\n", sound_timer);
+	//printf("Sound Timer: %d\n", sound_timer);
+	//Update timers at 60Hz
+	if (delay_timer > 0)
+		--delay_timer;
 
-		if (sound_timer > 0)
-		{
-			if (sound_timer == 1)
-				printf("BEEP!\n");
-			--sound_timer;
-		}
+	if (sound_timer > 0)
+	{
+		if (sound_timer == 1)
+			printf("BEEP!\n");
+		--sound_timer;
 	}
 }

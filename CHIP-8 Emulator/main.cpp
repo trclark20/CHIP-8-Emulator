@@ -1,5 +1,7 @@
 #include <SDL.h>
 #include "chip8.h"
+#include <thread>
+#include <chrono>
 
 chip8 _chip8;
 
@@ -7,6 +9,8 @@ int windowWidth = 640;
 int windowHeight = 320;
 int sx = windowWidth / 64;
 int sy = windowHeight / 32;
+
+int counter = 0;
 
 bool ready = false;
 bool quit = false;
@@ -26,14 +30,24 @@ int main(int argc, char **argv)
 
     _chip8.initialize();
 
-    const char* path = "..\\chip8 games\\PONG";
+    const char* path = "..\\chip8 games\\INVADERS";
     _chip8.loadGame(path);
 
     while (!quit)
     {
+		std::this_thread::sleep_for(std::chrono::milliseconds(3/2));
 		update();
+		counter++;
 
-		drawGraphics();
+		if (counter == 10)
+		{
+			_chip8.updateTimers();
+			counter = 0;
+		}
+
+		if (_chip8.drawFlag)
+			drawGraphics();
+
 		quit = ProcessInput(_chip8.key);
     }
 
@@ -77,7 +91,7 @@ void drawGraphics()
 }
 
 void update() {
-	_chip8.emulateCycle(10);
+	_chip8.emulateCycle(1);
 }
 
 bool ProcessInput(uint8_t* keys)

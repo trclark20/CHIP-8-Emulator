@@ -41,7 +41,11 @@ public:
 	void initialize();
 	void loadGame(const char *gameName);
 	void emulateCycle(int numberOfCycles);
+	void updateTimers();
 
+	int windowWidth = 640;
+	int windowHeight = 320;
+	int totalInstructions = 0;
 	unsigned char gfx[64 * 32];
 	unsigned char key[16];
 	bool drawFlag;
