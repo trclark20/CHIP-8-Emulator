@@ -74,8 +74,6 @@ void chip8::emulateCycle(int numberOfCycles)
 	for (int i = 0; i < numberOfCycles; i++)
 	{
 		totalInstructions++;
-		std::cout << std::string(50, '\n');
-		printf("Total instructions: %d", totalInstructions);
 		opcode = memory[pc] << 8 | memory[pc + 1];
 		
 		//printf("Executing opcode: 0x%X\n", opcode);

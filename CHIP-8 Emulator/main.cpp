@@ -1,14 +1,23 @@
 #include <SDL.h>
+#include <SDL_ttf.h>
 #include "chip8.h"
 #include <thread>
 #include <chrono>
+#include <string>
+#include <iostream>
+#include <sstream>
+#include <iomanip>
 
 chip8 _chip8;
 
-int windowWidth = 640;
-int windowHeight = 320;
-int sx = windowWidth / 64;
-int sy = windowHeight / 32;
+int frameNumber = 0;
+
+int windowWidth = 1920;
+int windowHeight = 640;
+int renderWidth = 1280;
+int renderHeight = 640;
+int scaleX = renderWidth / 64;
+int scaleY = renderHeight / 32;
 
 int counter = 0;
 
@@ -18,35 +27,61 @@ bool quit = false;
 SDL_Window* window;
 SDL_Renderer* renderer;
 SDL_Texture* texture;
+TTF_Font* Sans;
+SDL_Surface* surfaceMsg;
+SDL_Texture* Message;
+SDL_Color White = { 255, 255, 255 };
 
 int setupGraphics();
 void update();
 void drawGraphics();
+void drawDebug();
 bool ProcessInput(uint8_t* keys);
+
+const int SCREEN_FPS = 60;
+const int SCREEN_TICKS_PER_FRAME = 1000 / SCREEN_FPS;
+int actualFrames = 0;
 
 int main(int argc, char **argv)
 {
+	double fps = 0;
+	Uint32 startTime = SDL_GetTicks();
     setupGraphics();
 
     _chip8.initialize();
 
-    const char* path = "..\\chip8 games\\CONNECT4";
+    const char* path = "..\\chip8 games\\PONG2";
     _chip8.loadGame(path);
 
     while (!quit)
     {
+		actualFrames++;
+		Uint32 elapsedMS = SDL_GetTicks() - startTime;
+		if (elapsedMS) {
+			double elapsedSeconds = elapsedMS / 1000.0;
+			fps = actualFrames / elapsedSeconds;
+		}
+
 		std::this_thread::sleep_for(std::chrono::milliseconds(3/2));
+		std::cout << std::string(50, '\n');
+		printf("Fps: %f", fps);
+		printf("Frame: %d", frameNumber);
+		printf("Total instructions: %d", _chip8.totalInstructions);
 		update();
 		counter++;
 
 		if (counter == 10)
 		{
+			drawDebug();
 			_chip8.updateTimers();
 			counter = 0;
 		}
 
 		if (_chip8.drawFlag)
+		{
 			drawGraphics();
+			frameNumber++;
+		}
 
 		quit = ProcessInput(_chip8.key);
     }
@@ -56,10 +91,14 @@ int main(int argc, char **argv)
 
 int setupGraphics()
 {
+	TTF_Init();
+	Sans = TTF_OpenFont("..\\Fonts\\arial.ttf", 30);
+
     SDL_Init(SDL_INIT_VIDEO);
-    window = SDL_CreateWindow("Chip-8 Emulator", 0, 0, windowWidth, windowHeight, SDL_WINDOW_SHOWN);
-    renderer = SDL_CreateRenderer(window, -1, SDL_RENDERER_ACCELERATED);
+    window = SDL_CreateWindow("Chip-8 Emulator", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, windowWidth, windowHeight, SDL_WINDOW_SHOWN);
+    renderer = SDL_CreateRenderer(window, -1, SDL_RENDERER_ACCELERATED | SDL_RENDERER_PRESENTVSYNC);
 	texture = SDL_CreateTexture(renderer, SDL_PIXELFORMAT_ARGB8888, SDL_TEXTUREACCESS_STREAMING, 64, 32);
+
 	SDL_SetRenderDrawColor(renderer, 0, 0, 0, 255);
 
     return 0;
@@ -77,17 +116,52 @@ void drawGraphics()
 	{
 		for (int x = 0; x < 64; x++)
 		{
-			pixel.x = x * sx;
-			pixel.y = y * sy;
-			pixel.w = 10;
-			pixel.h = 10;
+			pixel.x = x * scaleX;
+			pixel.y = y * scaleY;
+			pixel.w = scaleX;
+			pixel.h = scaleY;
+
 			rownum = y * 64;
 			if (_chip8.gfx[x + rownum] == 1)
 				SDL_RenderFillRect(renderer, &pixel);
 		}
 	}
-	SDL_RenderPresent(renderer);
 	_chip8.drawFlag = false;
+}
+
+void drawDebug()
+{
+	SDL_Rect pixel;
+
+	SDL_SetRenderDrawColor(renderer, 22, 22, 22, 255);
+
+	pixel.x = 64 * scaleX;
+	pixel.y = 0;
+	pixel.w = windowWidth - renderWidth;
+	pixel.h = windowHeight;
+
+	SDL_RenderFillRect(renderer, &pixel);
+
+	std::ostringstream s;
+	s << "ACTUAL FRAME: " << actualFrames << "\n" << "FRAME: " << frameNumber << "\n" << "CLOCKS: " << _chip8.totalInstructions <<
+		"\n" << "PC: " << std::setfill('0') << std::setw(4) << std::right << std::uppercase << std::hex << _chip8.pc;
+	std::string str = s.str();
+
+	surfaceMsg = TTF_RenderText_Blended_Wrapped(Sans, str.c_str(), White, windowWidth - renderWidth);
+	Message = SDL_CreateTextureFromSurface(renderer, surfaceMsg);
+
+	SDL_Rect Message_rect;
+	Message_rect.x = 64 * scaleX;
+	Message_rect.y = 0;
+	Message_rect.w = windowWidth - renderWidth;
+	Message_rect.h = 100;
+
+	SDL_RenderCopy(renderer, Message, NULL, &Message_rect);
+
+	SDL_RenderPresent(renderer);
+
+	SDL_FreeSurface(surfaceMsg);
+	SDL_DestroyTexture(Message);
 }
 
 void update() {

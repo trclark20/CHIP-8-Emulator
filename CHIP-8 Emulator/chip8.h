@@ -5,7 +5,6 @@ private:
 	unsigned char memory[4096];
 	unsigned char V[16];
 	unsigned short I;
-	unsigned short pc;
 
 	unsigned char delay_timer;
 	unsigned char sound_timer;
@@ -43,10 +42,14 @@ public:
 	void emulateCycle(int numberOfCycles);
 	void updateTimers();
 
-	int windowWidth = 640;
-	int windowHeight = 320;
-	int totalInstructions = 0;
+	unsigned short pc;
 	unsigned char gfx[64 * 32];
 	unsigned char key[16];
+
+	int totalInstructions = 0;
+
 	bool drawFlag;
+
+	int windowWidth = 640;
+	int windowHeight = 320;
 };
