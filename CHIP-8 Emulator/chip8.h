@@ -44,7 +44,7 @@ public:
 
 	unsigned short pc;
 	unsigned char gfx[64 * 32];
-	unsigned char key[16];
+	unsigned char key[16] = { 0 };
 
 	int totalInstructions = 0;
 
