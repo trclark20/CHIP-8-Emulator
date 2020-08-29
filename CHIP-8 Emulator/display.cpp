@@ -27,7 +27,7 @@ display::~display()
 void display::calculateFps()
 {
 	cpsCalcNumber++;
-	if (startTime < SDL_GetTicks() - 1.0 * 1000)
+	if (startTime < SDL_GetTicks() - (1.0 * 1000))
 	{
 		startTime = SDL_GetTicks();
 
@@ -79,7 +79,7 @@ bool display::draw(unsigned char (&gfx)[64 * 32], bool drawFlag)
 	return drawFlag;
 }
 
-void display::drawDebug(int totalInstructions, unsigned short pc)
+void display::drawDebug(int totalInstructions, unsigned short pc, unsigned char memory[4096])
 {
 	SDL_Rect pixel;
 
@@ -94,7 +94,8 @@ void display::drawDebug(int totalInstructions, unsigned short pc)
 
 	std::ostringstream s;
 	s << "FRAME: " << frameNumber << "\n" << "CLOCKS: " << totalInstructions <<
-		"\n" << "PC: " << std::setfill('0') << std::setw(4) << std::right << std::uppercase << std::hex << pc;
+		"\n" << "PC: $" << std::setfill('0') << std::setw(4) << std::right << std::uppercase << std::hex << pc <<
+		"\n"  << "$" << std::setfill('0') << std::setw(4) << std::right << std::uppercase << std::hex << pc << ": " << memory[0];
 	std::string str = s.str();
 
 	messageSurface = TTF_RenderText_Blended_Wrapped(Sans, str.c_str(), WHITE, WINDOW_WIDTH - GAME_WIDTH);
@@ -231,6 +232,19 @@ bool display::processInput(uint8_t keys[16], bool quit)
 				else
 					WINDOW_WIDTH = 1280;
 			} break;
+
+			case SDLK_o:
+			{
+				speedup = true;
+			} break;
+			case SDLK_LEFTBRACKET:
+			{
+				decreaseSpeed = true;
+			} break;
+			case SDLK_RIGHTBRACKET:
+			{
+				increaseSpeed = true;
+			} break;
 			}
 		}
 
@@ -316,6 +330,11 @@ bool display::processInput(uint8_t keys[16], bool quit)
 			case SDLK_v:
 			{
 				keys[0xF] = 0;
+			} break;
+
+			case SDLK_o:
+			{
+				speedup = false;
 			} break;
 			}
 		} break;

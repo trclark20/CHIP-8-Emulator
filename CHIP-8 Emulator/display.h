@@ -27,6 +27,9 @@ public:
 	int cpsCalcNumber = 0;
 	int fpsCalcNumber = 0;
 
+	bool increaseSpeed = false;
+	bool decreaseSpeed = false;
+	bool speedup = false;
 	bool showDebug = false;
 	bool newFile = false;
 	char* dropped_filedir;
@@ -35,6 +38,6 @@ public:
 	~display();
 	void calculateFps();
 	bool draw(unsigned char(&gfx)[64 * 32], bool drawFlag);
-	void drawDebug(int totalInstructions, unsigned short pc);
+	void drawDebug(int totalInstructions, unsigned short pc, unsigned char memory[4096]);
 	bool processInput(uint8_t keys[16], bool quit);
 };

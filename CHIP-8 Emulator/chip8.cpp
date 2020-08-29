@@ -2,8 +2,11 @@
 #include <ios>
 #include <string>
 #include <iostream>
+#include <sstream>
+#include <string>
+#include <Windows.h>
+#include <chrono>
 
-unsigned char num;
 
 void chip8::initialize()
 {
@@ -70,6 +73,7 @@ void chip8::loadGame(const char *gameName)
 
 void chip8::emulateCycle(int numberOfCycles)
 {
+	auto previous_time = std::chrono::high_resolution_clock::now();
 	//Fetch opcode (next 2 bytes)
 	for (int i = 0; i < numberOfCycles; i++)
 	{
@@ -94,7 +98,12 @@ void chip8::emulateCycle(int numberOfCycles)
 				pc = stack[sp];
 				break;
 			default:
-				printf("Unknown opcode: 0x%X\n", opcode);
+			{
+				std::ostringstream s;
+				s << "Unknown opcode: " << opcode;
+				std::string str = s.str();
+				OutputDebugString(str.c_str());
+			}
 			}
 			break;
 
@@ -206,7 +215,7 @@ void chip8::emulateCycle(int numberOfCycles)
 		case 0xB000: //0xBNNN: PC=V0+NNN (Jumps to address NNN + V0)
 			pc = (V[0x0] + (opcode & 0x0FFF));
 			break;
-		case 0xC000: //0xCXNN: Vx=rand()&NN (set Vx to result of random number and NN)
+		case 0xC000: //0xCXNN: Vx=rand()&NN (set Vx to result of random number and NN
 			num = rand() % 256;
 			V[(opcode & 0x0F00) >> 8] = num & (opcode & 0x00FF);
 			pc += 2;
@@ -226,9 +235,9 @@ void chip8::emulateCycle(int numberOfCycles)
 				{
 					if ((pixel & (0x80 >> xline)) != 0)
 					{
-						if (gfx[(x + xline + ((y + yline) * 64))] == 1)
+						if (gfx[(x + xline + ((y + yline) * 64)) % 2048] == 1)
 							V[0xF] = 1;
-						gfx[x + xline + ((y + yline) * 64)] ^= 1;
+						gfx[(x + xline + ((y + yline) * 64)) % 2048] ^= 1;
 					}
 				}
 			}
@@ -328,6 +337,8 @@ void chip8::emulateCycle(int numberOfCycles)
 			break;
 		}
 	}
+	auto current_time = std::chrono::high_resolution_clock::now();
+	executionTicks += std::chrono::duration_cast<std::chrono::duration<float>>(current_time - previous_time).count() * 50;
 }
 
 void chip8::updateTimers()
@@ -342,7 +353,7 @@ void chip8::updateTimers()
 	if (sound_timer > 0)
 	{
 		if (sound_timer == 1)
-			printf("BEEP!\n");
+			playSound = true;
 		--sound_timer;
 	}
 }

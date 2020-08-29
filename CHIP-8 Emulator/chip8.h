@@ -2,7 +2,6 @@ class chip8
 {
 private:
 	unsigned short opcode;
-	unsigned char memory[4096];
 	unsigned char V[16];
 	unsigned short I;
 
@@ -15,6 +14,7 @@ private:
 	unsigned short x;
 	unsigned short y;
 	unsigned short height;
+	unsigned char num;
 
 	unsigned char chip8_fontset[80] =
 	{
@@ -45,9 +45,12 @@ public:
 	unsigned short pc;
 	unsigned char gfx[64 * 32];
 	unsigned char key[16] = { 0 };
+	unsigned char memory[4096];
 
+	float executionTicks = 0;
 	int totalInstructions = 0;
 
+	bool playSound = false;
 	bool drawFlag;
 
 	int windowWidth = 640;
